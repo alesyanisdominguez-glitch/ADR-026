@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Calculadora GlobalEnvíos App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="manifest" href="./manifest.json">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #eef2f6;
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh;
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+    }
+    .app-container {
+      width: 100%; max-width: 420px;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100vh;
+      max-height: 100dvh;
+      background: white; border-radius: 32px 32px 0 0;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    .app-header {
+      background: linear-gradient(135deg, #0b2b5e, #1b4a7a);
+      color: white; padding: 16px 20px; font-size: 1.1rem; font-weight: 600;
+      display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: relative;
+      flex-wrap: wrap;
+    }
+    .fecha-actual {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.15);
+      padding: 4px 10px;
+      border-radius: 12px;
+      margin-left: auto;
+      margin-right: 10px;
+    }
+    .fecha-actual i {
+      font-size: 0.7rem;
+    }
+    .main-content {
+      flex: 1; overflow-y: auto; padding: 20px 16px 12px;
+      background: #f8fafd; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+    }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .card {
+      background: white; border-radius: 20px; padding: 20px; margin-bottom: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.04); border: 1px solid #e9eef2;
+    }
+    .card h2 {
+      font-size: 1.1rem; margin-bottom: 16px; color: #0b2b5e;
+      display: flex; align-items: center; gap: 8px;
+    }
+    label { font-weight: 500; color: #2c3e50; font-size: 0.9rem; display: block; margin-bottom: 6px; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%; padding: 12px 15px; font-size: 1rem;
+      border: 2px solid #dce4ec; border-radius: 14px; background: white; margin-bottom: 16px;
+      transition: all 0.3s;
+    }
+    select:focus, input:focus { 
+      border-color: #1b4a7a; outline: none; 
+      box-shadow: 0 0 0 3px rgba(27,74,122,0.1); 
+      background: #fafcff;
+    }
+
+    .currency-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .currency-btn {
+      flex: 1 1 0; min-width: 90px; padding: 14px 8px; background: #f0f4f9;
+      border: 2px solid transparent; border-radius: 14px; font-weight: 600; font-size: 0.9rem;
+      color: #0b2b5e; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .currency-btn i { font-size: 1.3rem; color: #3a6ea5; transition: all 0.3s; }
+    .currency-btn:hover { 
+      background: #e3ebf5; 
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .currency-btn.active-currency { 
+      background: linear-gradient(135deg, #1b4a7a, #0b2b5e); 
+      color: white; 
+      border-color: #1b4a7a; 
+      box-shadow: 0 6px 14px rgba(27,74,122,0.3);
+      transform: translateY(-2px);
+    }
+    .currency-btn.active-currency i { color: white; }
+
+    .btn-primario {
+      width: 100%; padding: 16px; background: linear-gradient(135deg, #0b2b5e, #1b4a7a); 
+      color: white; font-weight: 700;
+      font-size: 1.1rem; border: none; border-radius: 18px; display: flex;
+      align-items: center; justify-content: center; gap: 10px; cursor: pointer; margin-top: 8px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(11,43,94,0.2);
+    }
+    .btn-primario:hover { 
+      background: linear-gradient(135deg, #123b72, #245a8a); 
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(11,43,94,0.3);
+    }
+    .btn-primario:active { transform: translateY(0); }
+    
+    .btn-secundario {
+      background: white; border: 2px solid #0b2b5e; color: #0b2b5e; padding: 10px 12px;
+      border-radius: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px;
+      cursor: pointer; flex: 1; justify-content: center; font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+    .btn-secundario:hover { 
+      background: #0b2b5e; color: white; 
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(11,43,94,0.3);
+    }
+
+    .resultado-box {
+      background: #eef5ff; border-radius: 18px; padding: 20px; margin-top: 16px;
+      border: 1px solid #cddff0; display: none;
+      animation: fadeInUp 0.5s ease-out;
+    }
+    .resultado-box.show { display: block; }
+    .resultado-cantidad { 
+      font-size: 2.2rem; font-weight: 700; 
+      background: linear-gradient(135deg, #0b2b5e, #1b4a7a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .resultado-detalle { 
+      margin: 12px 0; font-size: 0.9rem; background: white; padding: 12px; 
+      border-radius: 12px; display: flex; flex-direction: column; gap: 6px; 
+    }
+    .acciones-resultado { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .registro-rapido {
+      display: none; margin-top: 12px; background: #f0f4f9; border-radius: 14px; padding: 14px;
+      animation: fadeInUp 0.3s ease-out;
+    }
+    .registro-rapido.show { display: block; }
+
+    .lista-item {
+      background: white; border-radius: 16px; padding: 14px; margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04); font-size: 0.9rem;
+      display: flex; flex-direction: column; gap: 6px;
+      transition: all 0.3s;
+    }
+    .lista-item:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateX(5px);
+    }
+    .lista-item .fecha { color: #7f8c8d; font-size: 0.8rem; }
+    .acciones-item { display: flex; gap: 8px; margin-top: 8px; }
+    .btn-icon {
+      background: none; border: none; color: #7f8c8d; font-size: 1.2rem; cursor: pointer;
+      padding: 6px; border-radius: 8px; transition: 0.3s;
+    }
+    .btn-icon:hover { background: #e9eef2; color: #0b2b5e; }
+    .btn-icon.delete:hover { color: #e74c3c; }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .stat-card {
+      background: #f8fafd; border-radius: 16px; padding: 16px; text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      transition: all 0.3s;
+    }
+    .stat-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-3px);
+    }
+    .stat-card h3 { font-size: 0.8rem; color: #7f8c8d; margin-bottom: 8px; }
+    .stat-card .valor { font-size: 1.8rem; font-weight: 700; color: #0b2b5e; }
+    .stat-card .unidad { font-size: 0.8rem; color: #2c3e50; }
+
+    .bottom-nav {
+      background: white; border-top: 1px solid #e9eef2;
+      display: flex; justify-content: space-around; align-items: center;
+      padding: 8px 4px 12px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      color: #7f8c8d; font-size: 0.65rem; font-weight: 500;
+      cursor: pointer; padding: 6px 8px; border-radius: 12px; transition: 0.3s;
+      min-width: 55px;
+      position: relative;
+    }
+    .nav-item:hover {
+      background: #f0f4f9;
+      color: #1b4a7a;
+    }
+    .nav-item.active { 
+      color: #0b2b5e; 
+      background: #eef3fa; 
+      font-weight: 600; 
+    }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      width: 20px;
+      height: 3px;
+      background: #0b2b5e;
+      border-radius: 0 0 10px 10px;
+    }
+    .nav-item i { font-size: 1.3rem; transition: all 0.3s; }
+    .nav-item.active i { transform: scale(1.1); }
+    
+    .main-content::-webkit-scrollbar { width: 5px; }
+    .main-content::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; }
+    .main-content::-webkit-scrollbar-track { background: #f0f4f9; }
+
+    /* Contacto */
+    .contact-btn-header {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 8px 6px 8px;
+      border-radius: 16px;
+      transition: background 0.3s;
+      min-width: 50px;
+    }
+    .contact-btn-header:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+    .contact-icons-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0px;
+    }
+    .icon-phone {
+      font-size: 1.1rem;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .icon-chat {
+      font-size: 1.1rem;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      margin-top: -6px;
+      margin-left: 2px;
+    }
+    .contact-label {
+      font-size: 0.6rem;
+      color: white;
+      font-weight: 600;
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .contact-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      overflow: hidden;
+      min-width: 180px;
+      z-index: 100;
+      flex-direction: column;
+      animation: slideDown 0.3s ease-out;
+    }
+    .contact-dropdown.active {
+      display: flex;
+    }
+    .contact-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      color: #0b2b5e;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: background 0.3s;
+    }
+    .contact-option:hover {
+      background: #f0f4f9;
+      padding-left: 22px;
+    }
+    .contact-option i {
+      width: 20px;
+      text-align: center;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, #0b2b5e, #1b4a7a); color: white; padding: 12px 24px;
+      border-radius: 30px; font-size: 0.9rem; font-weight: 500;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2); z-index: 1000;
+      animation: slideUp 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+      white-space: nowrap;
+    }
+
+    /* Tarjeta imagen */
+    .tarjeta-imagen {
+      position: absolute; left: -9999px; top: 0;
+      width: 400px; background: linear-gradient(145deg, #0b2b5e 0%, #1b4a7a 100%);
+      border-radius: 24px; padding: 24px; color: white; font-family: 'Segoe UI', sans-serif;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .tarjeta-imagen .logo { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .tarjeta-imagen .monto-envio { font-size: 1.2rem; background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 12px; margin-bottom: 16px; }
+    .tarjeta-imagen .recibido { font-size: 3rem; font-weight: 800; text-align: center; margin: 16px 0; }
+    .tarjeta-imagen .detalles { background: rgba(255,255,255,0.15); border-radius: 16px; padding: 16px; display: flex; flex-wrap: wrap; gap: 12px; }
+    .tarjeta-imagen .detalle-item { flex: 1 1 45%; font-size: 0.9rem; }
+    .tarjeta-imagen .detalle-item span { display: block; font-weight: 300; font-size: 0.7rem; opacity: 0.8; }
+    .tarjeta-imagen .firma { margin-top: 20px; font-size: 0.7rem; opacity: 0.7; text-align: center; }
+
+    /* ============ ESTILOS PARA COMPRA DE MONEDA ============ */
+    .compra-header-card {
+      background: linear-gradient(135deg, #0b2b5e, #1b4a7a);
+      color: white;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .compra-header-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: rotate 20s linear infinite;
+    }
+    .compra-header-card h2 {
+      color: white;
+      justify-content: center;
+      font-size: 1.3rem;
+      position: relative;
+      z-index: 1;
+    }
+    .compra-subtitle {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 1;
+    }
+    .compra-update-info {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: white;
+      position: relative;
+      z-index: 1;
+    }
+    .compra-update-info i {
+      animation: spin 4s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Tarjetas de monedas */
+    .moneda-card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      border: 2px solid #e9eef2;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .moneda-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #0b2b5e, #1b4a7a);
+    }
+    .moneda-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+      border-color: #1b4a7a;
+    }
+    .moneda-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    .moneda-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .moneda-icono {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .moneda-icono.usd {
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+    }
+    .moneda-icono.cad {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+    }
+    .moneda-icono.eur {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+    }
+    .moneda-nombre {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    .moneda-codigo {
+      font-size: 0.8rem;
+      color: #7f8c8d;
+      font-weight: 500;
+    }
+    .moneda-precio {
+      text-align: right;
+    }
+    .precio-etiqueta {
+      font-size: 0.7rem;
+      color: #7f8c8d;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .precio-valor {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #0b2b5e, #1b4a7a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .precio-moneda {
+      font-size: 0.8rem;
+      color: #7f8c8d;
+    }
+    .moneda-estado {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 8px;
+    }
+    .moneda-estado.activo {
+      background: #e8f5e9;
+      color: #27ae60;
+      border: 1px solid #27ae60;
+    }
+
+    /* ============ ESTILOS PARA CUENTAS BANCARIAS ============ */
+    .cuenta-card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      border: 2px solid #e9eef2;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .cuenta-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #0b2b5e, #1b4a7a);
+    }
+    .cuenta-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+      border-color: #1b4a7a;
+    }
+    .cuenta-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e9eef2;
+    }
+    .bandera-pais {
+      font-size: 3rem;
+      line-height: 1;
+    }
+    .cuenta-titulo {
+      flex: 1;
+    }
+    .cuenta-titulo h3 {
+      font-size: 1.2rem;
+      color: #0b2b5e;
+      margin-bottom: 5px;
+    }
+    .metodo-badge {
+      display: inline-block;
+      background: #f0f4f9;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #0b2b5e;
+    }
+    .moneda-badge {
+      display: inline-block;
+      background: #e8f5e9;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #27ae60;
+    }
+    .campos-contenedor {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .campo-dato {
+      background: #f8fafd;
+      border-radius: 10px;
+      padding: 12px;
+      border-left: 3px solid #1b4a7a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+    .campo-dato:hover {
+      background: #f0f4f9;
+      transform: translateX(3px);
+    }
+    .campo-dato.requerido {
+      border-left-color: #e74c3c;
+    }
+    .campo-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .etiqueta-campo {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #7f8c8d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .valor-campo {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #0b2b5e;
+      word-break: break-all;
+    }
+    .btn-copiar-individual {
+      background: #f0f4f9;
+      border: 2px solid #dce4ec;
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      color: #0b2b5e;
+      flex-shrink: 0;
+    }
+    .btn-copiar-individual:hover {
+      background: #0b2b5e;
+      color: white;
+      border-color: #0b2b5e;
+      transform: scale(1.1);
+      box-shadow: 0 4px 8px rgba(11,43,94,0.3);
+    }
+    .btn-copiar-individual:active {
+      transform: scale(0.95);
+    }
+    .btn-copiar-individual.copiado {
+      background: #27ae60;
+      color: white;
+      border-color: #27ae60;
+      animation: pulse 0.3s ease;
+    }
+    .badge-requerido {
+      display: inline-block;
+      background: #e74c3c;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .instrucciones-lista {
+      background: #fff9e6;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 15px;
+    }
+    .instrucciones-lista h4 {
+      font-size: 0.8rem;
+      color: #f39c12;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .instrucciones-lista ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .instrucciones-lista li {
+      font-size: 0.85rem;
+      color: #2c3e50;
+      padding: 4px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+    .instrucciones-lista li::before {
+      content: '•';
+      position: absolute;
+      left: 5px;
+      color: #f39c12;
+      font-weight: bold;
+    }
+    .btn-copiar-datos {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #0b2b5e, #1b4a7a);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-copiar-datos:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(11,43,94,0.3);
+    }
+    .buscador-cuentas {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #f8fafd;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .buscador-cuentas input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #dce4ec;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    .buscador-cuentas input:focus {
+      border-color: #1b4a7a;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(27,74,122,0.1);
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    
+    @keyframes fadeOut { 
+      to { opacity: 0; transform: translateX(-50%) translateY(10px); } 
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .moneda-card, .cuenta-card {
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    /* Responsive */
+    @media (max-width: 380px) {
+      .moneda-precio {
+        text-align: left;
+        margin-top: 10px;
+      }
+      .moneda-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .precio-valor {
+        font-size: 1.5rem;
+      }
+      .bottom-nav {
+        padding: 6px 2px 10px;
+      }
+      .nav-item {
+        min-width: 45px;
+        font-size: 0.6rem;
+        padding: 4px 5px;
+      }
+      .nav-item i {
+        font-size: 1.1rem;
+      }
+      .app-header {
+        font-size: 0.9rem;
+        padding: 12px 15px;
+      }
+      .fecha-actual {
+        font-size: 0.7rem;
+        margin-left: 5px;
+        margin-right: 5px;
+      }
+      .campo-dato {
+        padding: 10px;
+        gap: 8px;
+      }
+      .btn-copiar-individual {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+      }
+      .valor-campo {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div class="app-header">
+    <i class="fas fa-exchange-alt"></i> 
+    <span id="titulo-header">CALCULADORA_GL🌎BAL ENVIOS💲CAHV</span>
+    
+    <!-- 📅 FECHA ACTUAL - Se actualiza automáticamente -->
+    <div class="fecha-actual">
+      <i class="fas fa-calendar-alt"></i>
+      <span id="fecha-actual"></span>
+    </div>
+  
+    <!-- Bloque de contacto -->
+    <div class="contact-btn-header" id="contact-btn">
+      <div class="contact-icons-row">
+        <i class="fas fa-phone-alt icon-phone"></i>
+        <i class="fas fa-comment-dots icon-chat"></i>
+      </div>
+      <span class="contact-label">Contactar</span>
+
+      <div class="contact-dropdown" id="contact-dropdown">
+        <div style="padding: 10px 18px; font-size: 0.8rem; color: #7f8c8d; border-bottom: 1px solid #e9eef2; font-weight: 500;">
+          Contactar a<br><strong style="color:#0b2b5e; font-size:0.95rem;">+53 5 8085330</strong>
+        </div>
+        <a href="tel:+5358085330" class="contact-option">
+          <i class="fas fa-phone"></i> Llamar
+        </a>
+        <a href="https://wa.me/5358085330" target="_blank" class="contact-option">
+          <i class="fab fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="https://t.me/globalesenvios" target="_blank" class="contact-option">
+          <i class="fab fa-telegram"></i> Telegram
+        </a>
+        <!-- 📝 FORMULARIO DE CONTACTO -->
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScfq2pphGB1oKEqdeITvhwH0IVQwbBHfI4_zdVBvV5d_MsDuQ/viewform?pli=1&pli=1" target="_blank" class="contact-option">
+          <i class="fas fa-envelope"></i> Formulario
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- Página Calculadora -->
+    <div id="page-calc" class="page active">
+      <div class="card">
+        <h2><i class="fas fa-globe-americas"></i> Método de pago</h2>
+        <label>Selecciona país o método</label>
+        <select id="selector">
+          <option value="EEUU">EEUU (50 Zelle)</option>
+          <option value="MEX">México Transfer /Oxxo</option>
+          <option value="REAL">(Brasil) PIX</option>
+          <option value="CAND">Canadá E-Transfer</option>
+          <option value="BIZUM">España Bizum</option>
+          <option value="IBAN">(Europa) IBAN</option>
+          <option value="TROPIPAY">(Europa) Tropipay </option>
+          <option value="PERÚ">Perú</option>
+          <option value="URUG">Uruguay</option>
+          <option value="NICARAG">Nicaragua</option>
+          <option value="RUSIA">Rusia</option>
+          <option value="PANAMÁ">Panamá</option>
+          <option value="ECUADOR">Ecuador</option>
+        </select>
+        <label id="label-monto">Monto a enviar (USD)</label>
+        <input type="number" id="monto" placeholder="Mínimo 25 USD" min="25">
+      </div>
+
+      <div class="card">
+        <h2><i class="fas fa-coins"></i> Moneda a recibir</h2>
+        <div class="currency-buttons">
+          <button id="btn-cup" class="currency-btn active-currency" data-moneda="cup">
+            <i class="fas fa-money-bill-wave"></i> CUP Efectivo
+          </button>
+          <button id="btn-mlc" class="currency-btn" data-moneda="mlc">
+            <i class="fas fa-credit-card"></i> Tarjeta CUP BPA BANDEC METRO
+          </button>
+          <button id="btn-usd_ef" class="currency-btn" data-moneda="usd">
+            <i class="fas fa-dollar-sign"></i> USD Efectivo o Clasica
+          </button>
+        </div>
+        <button id="btn-calcular" class="btn-primario">
+          <i class="fas fa-calculator"></i> Calcular
+        </button>
+
+        <div id="resultado-box" class="resultado-box">
+          <div class="resultado-cantidad" id="resultado-texto"></div>
+          <div class="resultado-detalle" id="detalle-texto"></div>
+          <div class="acciones-resultado">
+            <button class="btn-secundario" id="btn-copiar"><i class="fas fa-copy"></i> Copiar</button>
+            <button class="btn-secundario" id="btn-imagen"><i class="fas fa-camera"></i> Imagen</button>
+            <button class="btn-secundario" id="btn-registrar-envio"><i class="fas fa-save"></i> Registrar envío</button>
+          </div>
+          <div id="registro-rapido" class="registro-rapido">
+            <label>Destinatario / Beneficiario</label>
+            <input type="text" id="destinatario" placeholder="Nombre o referencia">
+            <label>Nota (opcional)</label>
+            <input type="text" id="nota-envio" placeholder="Ej. Pago de factura">
+            <button class="btn-primario" id="btn-guardar-envio" style="margin-top:8px;">
+              <i class="fas fa-check"></i> Guardar en Mis Envíos
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Página Compra de Moneda -->
+    <div id="page-compra" class="page">
+      <div class="card compra-header-card">
+        <h2><i class="fas fa-hand-holding-usd"></i> Compramos tus divisas</h2>
+        <p class="compra-subtitle">Estas son las monedas que estamos comprando actualmente</p>
+        <div class="compra-update-info">
+          <i class="fas fa-sync-alt"></i>
+          <span>Actualizado: <span id="fecha-compra"></span></span>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           🔧 SECCIÓN DE PRECIOS DE COMPRA - EDITAR AQUÍ
+           ============================================================ -->
+      <div class="moneda-card">
+        <div class="moneda-card-header">
+          <div class="moneda-info">
+            <div class="moneda-icono usd">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div>
+              <div class="moneda-nombre">Dólar Americano</div>
+              <div class="moneda-codigo">USD</div>
+            </div>
+          </div>
+          <div class="moneda-precio">
+            <div class="precio-etiqueta">Precio de compra</div>
+            <div class="precio-valor">$ 650.00</div>
+            <div class="precio-moneda">por USD</div>
+          </div>
+        </div>
+        <span class="moneda-estado activo">
+          <i class="fas fa-check-circle"></i> Compramos
+        </span>
+      </div>
+
+      <div class="moneda-card">
+        <div class="moneda-card-header">
+          <div class="moneda-info">
+            <div class="moneda-icono cad">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div>
+              <div class="moneda-nombre">Dólar Canadiense</div>
+              <div class="moneda-codigo">CAD</div>
+            </div>
+          </div>
+          <div class="moneda-precio">
+            <div class="precio-etiqueta">Precio de compra</div>
+            <div class="precio-valor">$ 415.00</div>
+            <div class="precio-moneda">por CAD</div>
+          </div>
+        </div>
+        <span class="moneda-estado activo">
+          <i class="fas fa-check-circle"></i> Compramos
+        </span>
+      </div>
+
+      <div class="moneda-card">
+        <div class="moneda-card-header">
+          <div class="moneda-info">
+            <div class="moneda-icono eur">
+              <i class="fas fa-euro-sign"></i>
+            </div>
+            <div>
+              <div class="moneda-nombre">Euro</div>
+              <div class="moneda-codigo">EUR</div>
+            </div>
+          </div>
+          <div class="moneda-precio">
+            <div class="precio-etiqueta">Precio de compra</div>
+            <div class="precio-valor">€ 725.00</div>
+            <div class="precio-moneda">por EUR</div>
+          </div>
+        </div>
+        <span class="moneda-estado activo">
+          <i class="fas fa-check-circle"></i> Compramos
+        </span>
+      </div>
+      <!-- ============================================================
+           🔧 FIN DE SECCIÓN DE PRECIOS DE COMPRA
+           ============================================================ -->
+    </div>
+
+    <!-- Página Cuentas Bancarias -->
+    <div id="page-cuentas" class="page">
+      <div class="card">
+        <h2><i class="fas fa-university"></i> Cuentas para Depósito</h2>
+        <p style="color: #7f8c8d; font-size: 0.9rem;">Selecciona el país para ver los datos de transferencia</p>
+      </div>
+      
+      <div class="buscador-cuentas">
+        <input type="text" id="buscar-cuentas" placeholder="🔍 Buscar por país, método o moneda...">
+      </div>
+      
+      <div id="contenedor-cuentas"></div>
+    </div>
+
+    <!-- Página Mis Envíos -->
+    <div id="page-envios" class="page">
+      <div class="card">
+        <h2><i class="fas fa-box"></i> Mis Envíos registrados</h2>
+        <input type="text" id="busqueda-envios" placeholder="🔍 Filtrar por destinatario, método...">
+        <div id="lista-envios"></div>
+        <button class="btn-primario" id="btn-agregar-manual" style="margin-top:12px;">
+          <i class="fas fa-plus-circle"></i> Agregar envío manual
+        </button>
+        <div id="form-envio-manual" style="display:none; margin-top:12px; background:#f0f4f9; border-radius:14px; padding:14px;">
+          <label>Método de pago</label>
+          <select id="metodo-manual">
+            <option>EEUU (Zelle)</option><option>México</option><option>Real (Brasil)</option>
+            <option>Canadá</option><option>Bizum</option><option>IBAN (Europa)</option>
+            <option>Perú</option><option>Uruguay</option><option>Nicaragua</option>
+            <option>Rusia</option><option>Panamá</option>
+            <option>Ecuador</option>
+          </select>
+          <label>Monto USD</label>
+          <input type="number" id="monto-manual" placeholder="Mínimo 20" min="20">
+          <label>Moneda recibida</label>
+          <select id="moneda-manual">
+            <option value="CUP">CUP Efectivo</option>
+            <option value="MLC">Tarjeta CUP</option>
+            <option value="USD">USD Efectivo</option>
+          </select>
+          <label>Tasa aplicada</label>
+          <input type="number" id="tasa-manual" placeholder="Tasa" step="any">
+          <label>Destinatario</label>
+          <input type="text" id="destinatario-manual" placeholder="Nombre">
+          <label>Nota</label>
+          <input type="text" id="nota-manual" placeholder="Opcional">
+          <button class="btn-primario" id="btn-guardar-manual"><i class="fas fa-save"></i> Guardar envío</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Página Historial -->
+    <div id="page-history" class="page">
+      <div class="card">
+        <h2><i class="fas fa-history"></i> Historial de consultas</h2>
+        <input type="text" id="busqueda-consultas" placeholder="🔍 Filtrar por método o moneda...">
+        <div id="lista-consultas"></div>
+      </div>
+    </div>
+
+    <!-- Página Estadísticas -->
+    <div id="page-stats" class="page">
+      <div class="card">
+        <h2><i class="fas fa-chart-pie"></i> Resumen de envíos realizados</h2>
+        <div class="stats-grid" id="stats-resumen"></div>
+      </div>
+      <div class="card">
+        <h2><i class="fas fa-chart-bar"></i> Métodos más usados</h2>
+        <div id="grafico-metodos"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" data-page="calc"><i class="fas fa-calculator"></i><span>Calculadora</span></div>
+    <div class="nav-item" data-page="compra"><i class="fas fa-coins"></i><span>Compra</span></div>
+    <div class="nav-item" data-page="cuentas"><i class="fas fa-university"></i><span>Cuentas</span></div>
+    <div class="nav-item" data-page="envios"><i class="fas fa-box"></i><span>Mis Envíos</span></div>
+    <div class="nav-item" data-page="history"><i class="fas fa-history"></i><span>Historial</span></div>
+    <div class="nav-item" data-page="stats"><i class="fas fa-chart-bar"></i><span>Stats</span></div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ============================================================
+    // 📅 FUNCIÓN PARA ACTUALIZAR LA FECHA ACTUAL
+    // ============================================================
+    function actualizarFecha() {
+      const ahora = new Date();
+      const opciones = { 
+        weekday: 'short', 
+        day: '2-digit', 
+        month: 'short', 
+        year: 'numeric' 
+      };
+      const fechaFormateada = ahora.toLocaleDateString('es-ES', opciones);
+      document.getElementById('fecha-actual').textContent = fechaFormateada;
+      document.getElementById('fecha-compra').textContent = fechaFormateada;
+    }
+    
+    // Actualizar fecha al cargar y cada minuto
+    actualizarFecha();
+    setInterval(actualizarFecha, 60000);
+
+    // ============================================================
+    // 🔧 SECCIÓN DE TASAS DE CAMBIO - EDITAR AQUÍ
+    // ============================================================
+    const tasasBase = {
+      EEUU:      { cup: 630.00, mlc: 0.00, usd: 0.9091},
+      MEX:       { cup: 30.00,  mlc: 0.00,  usd: 0.00 },
+      REAL:      { cup: 100.00, mlc: 0.00,    usd: 0.00 },
+      CAND:      { cup: 362.00,  mlc: 0.00,    usd: 0.00 },
+      BIZUM:     { cup: 650.00,  mlc: 0.00,    usd: 0.945 },
+      IBAN:      { cup: 670.00,  mlc: 0.00,    usd: 0.00 },
+      TROPIPAY:  { cup: 670.00,  mlc: 0.00,    usd: 0.953 },
+      PERÚ:      { cup: 120.00,  mlc: 0.00,    usd: 0.00 },
+      URUG:      { cup: 10.00,   mlc: 0.00,    usd: 0.00 },
+      NICARAG:   { cup: 10.00,   mlc: 0.00,    usd: 0.00 },
+      RUSIA:     { cup: 4.00,    mlc: 0.00,    usd: 0.00 },
+      PANAMÁ:    { cup: 580.00,  mlc: 0.00,    usd: 0.00 },
+      ECUADOR:   { cup: 567.00,  mlc: 0.00,    usd: 0.00 },
+    };
+    // ============================================================
+
+    // ============================================================
+    // 🔧 SECCIÓN DE CUENTAS BANCARIAS - EDITAR AQUÍ
+    // ============================================================
+    const cuentasBancarias = {
+      EEUU: {
+        pais: "Estados Unidos",
+        bandera: "🇺🇸",
+        moneda: "USD",
+        metodoPago: "Zelle",
+        datosRequeridos: [
+          { 
+            campo: "metodo", 
+            etiqueta: "Método de Pago", 
+            valor: "Zelle", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "nombre", 
+            etiqueta: "Nombre del Titular", 
+            valor: "Gilberto Roque", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "telefono", 
+            etiqueta: "Número de Teléfono", 
+            valor: "PENDIENTE DE CONFIGURAR", 
+            requerido: false,
+            tipo: "telefono"
+          },
+          { 
+            campo: "correo", 
+            etiqueta: "Correo Electrónico", 
+            valor: "arcaribean2026@gmail.com", 
+            requerido: true,
+            tipo: "email"
+          },
+          { 
+            campo: "descripcion", 
+            etiqueta: "Descripción", 
+            valor: "PENDIENTE DE CONFIGURAR", 
+            requerido: false,
+            tipo: "texto"
+          }
+        ],
+        instrucciones: [
+          "Usar Zelle para transferencias inmediatas",
+          "Incluir nombre completo en la transferencia"
+        ]
+      },
+      
+      MEX: {
+        pais: "México",
+        bandera: "🇲🇽",
+        moneda: "MXN",
+        metodoPago: "Transferencia Bancaria",
+        datosRequeridos: [
+          { 
+            campo: "titular", 
+            etiqueta: "Titular de la Cuenta", 
+            valor: "PENDIENTE A CONFIGURAR", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "numero_cuenta", 
+            etiqueta: "Número de Cuenta", 
+            valor: "PENDIENTE A CONFIGURAR", 
+            requerido: true,
+            tipo: "numero"
+          },
+          { 
+            campo: "banco", 
+            etiqueta: "Banco", 
+            valor: "BANCO ALBO", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "concepto", 
+            etiqueta: "Concepto", 
+            valor: "ABONO", 
+            requerido: true,
+            tipo: "texto"
+          }
+        ],
+        instrucciones: [
+          "Usar CLABE interbancaria para transferencias SPEI",
+          "El concepto debe ser exactamente: ABONO"
+        ]
+      },
+      
+      BRASIL: {
+        pais: "Brasil",
+        bandera: "🇧🇷",
+        moneda: "BRL",
+        metodoPago: "PIX",
+        datosRequeridos: [
+          { 
+            campo: "chave_pix", 
+            etiqueta: "Chave Pix", 
+            valor: "PENDIENTE A CONFIGURAR", 
+            requerido: true,
+            tipo: "email"
+          },
+          { 
+            campo: "banco", 
+            etiqueta: "Banco", 
+            valor: "Sicoob", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "titular", 
+            etiqueta: "Titular de la Cuenta", 
+            valor: "Gabriel Padilla Rodriguez", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "monto_minimo", 
+            etiqueta: "Monto Mínimo", 
+            valor: "100 BRL", 
+            requerido: true,
+            tipo: "numero"
+          }
+        ],
+        instrucciones: [
+          "El monto mínimo de transferencia es 100 BRL",
+          "Usar PIX para transferencias inmediatas"
+        ]
+      },
+      
+      ESPANA: {
+        pais: "España",
+        bandera: "🇪🇸",
+        moneda: "EUR",
+        metodoPago: "Bizum",
+        datosRequeridos: [
+          { 
+            campo: "nombre_negocio", 
+            etiqueta: "Nombre del Negocio", 
+            valor: "PENDIENTE A CONFIGURAR", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "titular_registrado", 
+            etiqueta: "Titular Registrado", 
+            valor: "PENDIENTE A CONFIGURAR", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "telefono", 
+            etiqueta: "Teléfono Bizum", 
+            valor: "PENDIENTE A CONFIGURAR", 
+            requerido: true,
+            tipo: "telefono"
+          },
+          { 
+            campo: "concepto", 
+            etiqueta: "Concepto", 
+            valor: "PAGO DE SERVICIOS", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "monto_minimo", 
+            etiqueta: "Monto Mínimo", 
+            valor: "100 EUR", 
+            requerido: true,
+            tipo: "numero"
+          },
+          { 
+            campo: "condicion_pago", 
+            etiqueta: "Condición de Pago", 
+            valor: "PAGO CUANDO LLEGUEN LOS EUROS", 
+            requerido: true,
+            tipo: "texto"
+          }
+        ],
+        instrucciones: [
+          "El monto mínimo es 100 EUR",
+          "El pago se realiza cuando lleguen los euros",
+          "Usar Bizum para transferencias inmediatas"
+        ]
+      },
+      
+      URUGUAY: {
+        pais: "Uruguay",
+        bandera: "🇺🇾",
+        moneda: "UYU",
+        metodoPago: "Transferencia Bancaria",
+        datosRequeridos: [
+          { 
+            campo: "titular", 
+            etiqueta: "Titular de la Cuenta", 
+            valor: "Massiel de la Caridad Escaig Rubio", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "cuenta_santander", 
+            etiqueta: "Cuenta (Dentro de Santander)", 
+            valor: "PENDIENTE A CONFIGURAR", 
+            requerido: true,
+            tipo: "numero"
+          },
+          { 
+            campo: "moneda", 
+            etiqueta: "Moneda", 
+            valor: "UYU", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "sucursal", 
+            etiqueta: "Sucursal", 
+            valor: "71 - Casa Central", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "cuenta_otros_bancos", 
+            etiqueta: "Cuenta (Desde otros bancos)", 
+            valor: "PENDIENTE A CONFIGURAR", 
+            requerido: true,
+            tipo: "numero"
+          },
+          { 
+            campo: "tipo_operacion", 
+            etiqueta: "Tipo de Operación", 
+            valor: "OTROS", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "numero_cuenta_anterior", 
+            etiqueta: "Número de Cuenta Anterior", 
+            valor: "PENDIENTE A CONFIGURAR", 
+            requerido: false,
+            tipo: "numero"
+          },
+          { 
+            campo: "observaciones", 
+            etiqueta: "Observaciones o Asunto", 
+            valor: "PONER SU # CÉDULA", 
+            requerido: true,
+            tipo: "texto"
+          },
+          { 
+            campo: "concepto", 
+            etiqueta: "Concepto Sugerido", 
+            valor: "Comida casera, Flanes, Postres", 
+            requerido: true,
+            tipo: "texto"
+          }
+        ],
+        instrucciones: [
+          "Para transferencias dentro de Santander usar cuenta: 1672991",
+          "Para transferencias desde otros bancos usar cuenta: 0071000001672991",
+          "Siempre poner el # de cédula en las observaciones",
+          "El concepto debe ser relacionado a comida casera"
+        ]
+      }
+    };
+    // ============================================================
+
+    const monedasLocales = {
+      EEUU: 'USD',
+      MEX: 'MXN',
+      REAL: 'BRL',
+      CAND: 'CAD',
+      BIZUM: 'EUR',
+      IBAN: 'EUR',
+      TROPIPAY: 'EUR',
+      PERÚ: 'PEN',
+      URUG: 'UYU',
+      NICARAG: 'NIO',
+      RUSIA: 'RUB',
+      PANAMÁ: 'USD',
+      ECUADOR: 'USD'
+    };
+
+    // Páginas
+    const pages = {
+      calc: document.getElementById('page-calc'),
+      compra: document.getElementById('page-compra'),
+      cuentas: document.getElementById('page-cuentas'),
+      envios: document.getElementById('page-envios'),
+      history: document.getElementById('page-history'),
+      stats: document.getElementById('page-stats')
+    };
+    const navItems = document.querySelectorAll('.nav-item');
+    const tituloHeader = document.getElementById('titulo-header');
+
+    // Calculadora
+    const selector = document.getElementById('selector');
+    const montoInput = document.getElementById('monto');
+    const labelMonto = document.getElementById('label-monto');
+    const btnCUP = document.getElementById('btn-cup');
+    const btnMLC = document.getElementById('btn-mlc');
+    const btnUSD = document.getElementById('btn-usd_ef');
+    const btnCalcular = document.getElementById('btn-calcular');
+    const resultadoBox = document.getElementById('resultado-box');
+    const resultadoTexto = document.getElementById('resultado-texto');
+    const detalleTexto = document.getElementById('detalle-texto');
+    const btnCopiar = document.getElementById('btn-copiar');
+    const btnImagen = document.getElementById('btn-imagen');
+    const btnRegistrarEnvio = document.getElementById('btn-registrar-envio');
+    const registroRapido = document.getElementById('registro-rapido');
+    const btnGuardarEnvio = document.getElementById('btn-guardar-envio');
+    const destinatarioInput = document.getElementById('destinatario');
+    const notaInput = document.getElementById('nota-envio');
+
+    // Mis Envíos
+    const busquedaEnvios = document.getElementById('busqueda-envios');
+    const listaEnvios = document.getElementById('lista-envios');
+    const btnAgregarManual = document.getElementById('btn-agregar-manual');
+    const formEnvioManual = document.getElementById('form-envio-manual');
+    const btnGuardarManual = document.getElementById('btn-guardar-manual');
+
+    // Historial consultas
+    const busquedaConsultas = document.getElementById('busqueda-consultas');
+    const listaConsultas = document.getElementById('lista-consultas');
+
+    // Estadísticas
+    const statsResumen = document.getElementById('stats-resumen');
+    const graficoMetodos = document.getElementById('grafico-metodos');
+
+    // Contacto
+    const contactBtn = document.getElementById('contact-btn');
+    const contactDropdown = document.getElementById('contact-dropdown');
+
+    // Cuentas bancarias
+    const contenedorCuentas = document.getElementById('contenedor-cuentas');
+    const buscarCuentas = document.getElementById('buscar-cuentas');
+
+    let monedaSeleccionada = 'cup';
+    let ultimoCalculo = null;
+
+    function actualizarEtiquetaMonto() {
+      const codigo = monedasLocales[selector.value] || 'USD';
+      labelMonto.textContent = `Monto a enviar (${codigo})`;
+      montoInput.placeholder = `Mínimo 25 ${codigo}`;
+    }
+
+    selector.addEventListener('change', actualizarEtiquetaMonto);
+
+    function obtenerConsultas() {
+      return JSON.parse(localStorage.getItem('historial_consultas') || '[]');
+    }
+    function guardarConsultas(lista) {
+      localStorage.setItem('historial_consultas', JSON.stringify(lista));
+    }
+    function obtenerEnvios() {
+      return JSON.parse(localStorage.getItem('envios_registrados') || '[]');
+    }
+    function guardarEnvios(lista) {
+      localStorage.setItem('envios_registrados', JSON.stringify(lista));
+    }
+
+    function mostrarToast(mensaje) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = mensaje;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ============================================================
+    // 🔧 FUNCIONES PARA CUENTAS BANCARIAS
+    // ============================================================
+    function renderizarCuentas(filtro = '') {
+      contenedorCuentas.innerHTML = '';
+      
+      let cuentasFiltradas = cuentasBancarias;
+      if (filtro) {
+        const filtroLower = filtro.toLowerCase();
+        cuentasFiltradas = Object.fromEntries(
+          Object.entries(cuentasBancarias).filter(([codigo, cuenta]) => {
+            return cuenta.pais.toLowerCase().includes(filtroLower) ||
+                   cuenta.metodoPago.toLowerCase().includes(filtroLower) ||
+                   cuenta.moneda.toLowerCase().includes(filtroLower);
+          })
+        );
+      }
+      
+      if (Object.keys(cuentasFiltradas).length === 0) {
+        contenedorCuentas.innerHTML = `
+          <div class="card">
+            <p style="text-align: center; color: #7f8c8d;">
+              <i class="fas fa-search" style="font-size: 2rem;"></i><br>
+              No se encontraron cuentas con ese criterio
+            </p>
+          </div>
+        `;
+        return;
+      }
+      
+      Object.entries(cuentasFiltradas).forEach(([codigo, cuenta]) => {
+        const cardCuenta = document.createElement('div');
+        cardCuenta.className = 'cuenta-card';
+        
+        let camposHTML = '';
+        cuenta.datosRequeridos.forEach((dato, index) => {
+          const esRequerido = dato.requerido ? 'requerido' : '';
+          const badgeRequerido = dato.requerido ? 
+            '<span class="badge-requerido">Requerido</span>' : '';
+          
+          camposHTML += `
+            <div class="campo-dato ${esRequerido}">
+              <div class="campo-info">
+                <span class="etiqueta-campo">${dato.etiqueta}${badgeRequerido}</span>
+                <span class="valor-campo">${dato.valor}</span>
+              </div>
+              <button class="btn-copiar-individual" 
+                      onclick="copiarDatoIndividual('${codigo}', ${index})" 
+                      title="Copiar solo este dato">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+          `;
+        });
+        
+        let instruccionesHTML = '';
+        if (cuenta.instrucciones && cuenta.instrucciones.length > 0) {
+          instruccionesHTML = `
+            <div class="instrucciones-lista">
+              <h4><i class="fas fa-info-circle"></i> Instrucciones Importantes</h4>
+              <ul>
+                ${cuenta.instrucciones.map(inst => `<li>${inst}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        }
+        
+        cardCuenta.innerHTML = `
+          <div class="cuenta-header">
+            <span class="bandera-pais">${cuenta.bandera}</span>
+            <div class="cuenta-titulo">
+              <h3>${cuenta.pais}</h3>
+              <span class="metodo-badge">${cuenta.metodoPago}</span>
+              <span class="moneda-badge">${cuenta.moneda}</span>
+            </div>
+          </div>
+          <div class="campos-contenedor">
+            ${camposHTML}
+          </div>
+          ${instruccionesHTML}
+          <button class="btn-copiar-datos" onclick="copiarDatosCuenta('${codigo}')">
+            <i class="fas fa-copy"></i> Copiar Todos los Datos
+          </button>
+        `;
+        
+        contenedorCuentas.appendChild(cardCuenta);
+      });
+    }
+
+    window.copiarDatoIndividual = function(codigoPais, indexDato) {
+      const cuenta = cuentasBancarias[codigoPais];
+      const dato = cuenta.datosRequeridos[indexDato];
+      
+      if (!dato) {
+        mostrarToast('❌ Error: Dato no encontrado');
+        return;
+      }
+      
+      navigator.clipboard.writeText(dato.valor)
+        .then(() => {
+          mostrarToast(`✅ ${dato.etiqueta} copiado`);
+          
+          const botones = document.querySelectorAll('.btn-copiar-individual');
+          botones.forEach(btn => {
+            if (btn.onclick && btn.onclick.toString().includes(`${codigoPais}', ${indexDato}`)) {
+              btn.classList.add('copiado');
+              btn.innerHTML = '<i class="fas fa-check"></i>';
+              setTimeout(() => {
+                btn.classList.remove('copiado');
+                btn.innerHTML = '<i class="fas fa-copy"></i>';
+              }, 2000);
+            }
+          });
+        })
+        .catch(() => mostrarToast('❌ Error al copiar'));
+    };
+
+    window.copiarDatosCuenta = function(codigoPais) {
+      const cuenta = cuentasBancarias[codigoPais];
+      
+      let textoCopiar = `🏦 DATOS DE TRANSFERENCIA - ${cuenta.pais} ${cuenta.bandera}\n`;
+      textoCopiar += `💰 Método: ${cuenta.metodoPago}\n`;
+      textoCopiar += `💵 Moneda: ${cuenta.moneda}\n`;
+      textoCopiar += `${'='.repeat(40)}\n\n`;
+      
+      cuenta.datosRequeridos.forEach(dato => {
+        textoCopiar += `${dato.etiqueta}: ${dato.valor}\n`;
+      });
+      
+      if (cuenta.instrucciones && cuenta.instrucciones.length > 0) {
+        textoCopiar += `\n📌 INSTRUCCIONES:\n`;
+        cuenta.instrucciones.forEach((inst, index) => {
+          textoCopiar += `${index + 1}. ${inst}\n`;
+        });
+      }
+      
+      navigator.clipboard.writeText(textoCopiar)
+        .then(() => {
+          mostrarToast('✅ Todos los datos copiados');
+          
+          const botones = document.querySelectorAll('.btn-copiar-datos');
+          botones.forEach(btn => {
+            if (btn.onclick && btn.onclick.toString().includes(`${codigoPais}'`)) {
+              btn.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+              btn.style.background = '#27ae60';
+              setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-copy"></i> Copiar Todos los Datos';
+                btn.style.background = '';
+              }, 2000);
+            }
+          });
+        })
+        .catch(() => mostrarToast('❌ Error al copiar'));
+    };
+
+    // Navegación
+    function cambiarPagina(pageId) {
+      Object.values(pages).forEach(p => p.classList.remove('active'));
+      pages[pageId].classList.add('active');
+      navItems.forEach(n => n.classList.remove('active'));
+      document.querySelector(`.nav-item[data-page="${pageId}"]`).classList.add('active');
+      
+      const titulos = {
+        calc: 'Calculadora GlobalEnvíos',
+        compra: 'Compra de Divisas',
+        cuentas: 'Cuentas de Depósito',
+        envios: 'Mis Envíos',
+        history: 'Historial de Consultas',
+        stats: 'Estadísticas'
+      };
+      tituloHeader.textContent = titulos[pageId] || 'Calculadora';
+
+      if (pageId === 'envios') renderEnvios();
+      else if (pageId === 'history') renderConsultas();
+      else if (pageId === 'stats') actualizarEstadisticas();
+      else if (pageId === 'cuentas') renderizarCuentas(buscarCuentas.value);
+    }
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => cambiarPagina(item.dataset.page));
+    });
+
+    // Buscador de cuentas
+    buscarCuentas.addEventListener('input', (e) => {
+      renderizarCuentas(e.target.value);
+    });
+
+    // Botón agregar manual
+    btnAgregarManual.addEventListener('click', () => {
+      formEnvioManual.style.display = formEnvioManual.style.display === 'none' ? 'block' : 'none';
+    });
+
+    btnGuardarManual.addEventListener('click', () => {
+      const metodo = document.getElementById('metodo-manual').value;
+      const monto = parseFloat(document.getElementById('monto-manual').value);
+      const moneda = document.getElementById('moneda-manual').value;
+      const tasa = parseFloat(document.getElementById('tasa-manual').value);
+      const destinatario = document.getElementById('destinatario-manual').value.trim() || 'Sin nombre';
+      const nota = document.getElementById('nota-manual').value.trim();
+
+      if (!metodo || isNaN(monto) || monto < 20 || !moneda || isNaN(tasa)) {
+        return mostrarToast('⚠️ Completa todos los campos correctamente');
+      }
+      let comision = 0;
+      let montoEfectivo = monto;
+      if (monto < 49.9) { comision = 5; montoEfectivo = monto -5; }
+      const recibido = montoEfectivo * tasa;
+
+      const nuevoEnvio = {
+        id: Date.now(),
+        metodo,
+        montoOriginal: monto,
+        comision,
+        moneda,
+        tasa,
+        recibido,
+        destinatario,
+        nota,
+        fecha: new Date().toLocaleString()
+      };
+      const envios = obtenerEnvios();
+      envios.unshift(nuevoEnvio);
+      guardarEnvios(envios);
+      formEnvioManual.style.display = 'none';
+      document.getElementById('monto-manual').value = '';
+      document.getElementById('tasa-manual').value = '';
+      document.getElementById('destinatario-manual').value = '';
+      document.getElementById('nota-manual').value = '';
+      renderEnvios(busquedaEnvios.value);
+      actualizarEstadisticas();
+      mostrarToast('✅ Envío manual guardado');
+    });
+
+    // Calculadora
+    function actualizarBotonActivo() {
+      [btnCUP, btnMLC, btnUSD].forEach(b => b.classList.remove('active-currency'));
+      if (monedaSeleccionada === 'cup') btnCUP.classList.add('active-currency');
+      else if (monedaSeleccionada === 'mlc') btnMLC.classList.add('active-currency');
+      else if (monedaSeleccionada === 'usd') btnUSD.classList.add('active-currency');
+    }
+    btnCUP.addEventListener('click', () => { monedaSeleccionada='cup'; actualizarBotonActivo(); });
+    btnMLC.addEventListener('click', () => { monedaSeleccionada='mlc'; actualizarBotonActivo(); });
+    btnUSD.addEventListener('click', () => { monedaSeleccionada='usd'; actualizarBotonActivo(); });
+
+    function obtenerTasas() {
+      return tasasBase[selector.value] || tasasBase['EEUU'];
+    }
+
+    function formatearMoneda(valor, moneda) {
+      if (moneda === 'usd' || moneda === 'USD') return `$${valor.toFixed(2)} USD`;
+      if (moneda === 'mlc' || moneda === 'MLC') return `${valor.toFixed(2)} MLC`;
+      return `${valor.toFixed(2)} CUP`;
+    }
+
+    function calcular() {
+      const monto = parseFloat(montoInput.value);
+      if (isNaN(monto) || monto < 25) {
+        mostrarToast('⚠️ El monto mínimo es 25');
+        return;
+      }
+      const tasas = obtenerTasas();
+      let tasa = monedaSeleccionada === 'cup' ? tasas.cup : (monedaSeleccionada === 'mlc' ? tasas.mlc : tasas.usd);
+      if (monedaSeleccionada === 'usd' && tasa === 0) {
+        mostrarToast('❌ No disponemos de USD cash para este país');
+        return;
+      }
+      if (monedaSeleccionada === 'mlc' && tasa === 0) {
+        mostrarToast('❌ No disponemos de CUP en tarjeta para este país');
+        return;
+      }
+      let montoEfectivo = monto;
+      let comision = 0;
+      if (monto < 49.9) { comision = 5; montoEfectivo = monto -5; }
+      const recibido = montoEfectivo * tasa;
+      const monedaNombre = monedaSeleccionada === 'cup' ? 'CUP' : (monedaSeleccionada === 'mlc' ? 'MLC' : 'USD');
+
+      ultimoCalculo = {
+        metodo: selector.options[selector.selectedIndex].text,
+        montoOriginal: monto,
+        comision,
+        moneda: monedaNombre,
+        tasa,
+        recibido,
+        fecha: new Date().toLocaleString()
+      };
+
+      resultadoTexto.textContent = formatearMoneda(recibido, monedaSeleccionada);
+      detalleTexto.innerHTML = `
+        <div><strong>Envías:</strong> ${monto.toFixed(2)} ${monedasLocales[selector.value] || 'USD'}</div>
+        ${comision > 0 ? `<div><strong>Comisión (-5 ${monedasLocales[selector.value] || 'USD'}):</strong> se descuenta</div>` : ''}
+        <div><strong>Tasa:</strong> ${tasa.toFixed(2)}</div>
+        <div><strong>Recibes:</strong> ${formatearMoneda(recibido, monedaSeleccionada)}</div>
+      `;
+      resultadoBox.classList.add('show');
+      registroRapido.classList.remove('show');
+
+      const consultas = obtenerConsultas();
+      const duplicado = consultas.findIndex(c =>
+        c.metodo === ultimoCalculo.metodo && c.montoOriginal === ultimoCalculo.montoOriginal && c.moneda === ultimoCalculo.moneda
+      );
+      if (duplicado !== -1) consultas[duplicado].fecha = ultimoCalculo.fecha;
+      else {
+        consultas.unshift({ id: Date.now(), ...ultimoCalculo });
+        if (consultas.length > 50) consultas.pop();
+      }
+      guardarConsultas(consultas);
+
+      setTimeout(() => resultadoBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    }
+    btnCalcular.addEventListener('click', calcular);
+
+    btnCopiar.addEventListener('click', () => {
+      if (!ultimoCalculo) return;
+      const texto = `💰 Envío: ${ultimoCalculo.metodo}\nMonto: ${ultimoCalculo.montoOriginal.toFixed(2)} ${monedasLocales[selector.value] || 'USD'}\nRecibes: ${formatearMoneda(ultimoCalculo.recibido, ultimoCalculo.moneda.toLowerCase())}\nTasa: ${ultimoCalculo.tasa.toFixed(2)}`;
+      navigator.clipboard.writeText(texto)
+        .then(() => mostrarToast('📋 Resultado copiado'))
+        .catch(() => mostrarToast('⚠️ No se pudo copiar'));
+    });
+
+    async function generarImagenPersonalizada(datos) {
+      const tarjeta = document.createElement('div');
+      tarjeta.className = 'tarjeta-imagen';
+      const destinatario = datos.destinatario ? `<div class="detalle-item"><span>Destinatario</span> ${datos.destinatario}</div>` : '';
+      const monedaLocal = monedasLocales[selector.value] || 'USD';
+      tarjeta.innerHTML = `
+        <div class="logo"><i class="fas fa-exchange-alt"></i>FACTURA GL🌎BAL ENVÍOS $</div>
+        <div class="monto-envio"><span style="opacity:0.8;">Envías</span> <strong>${datos.montoOriginal.toFixed(2)} ${monedaLocal}</strong></div>
+        <div class="recibido">${formatearMoneda(datos.recibido, datos.moneda)}</div>
+        <div class="detalles">
+          ${destinatario}
+          <div class="detalle-item"><span>Método</span> ${datos.metodo}</div>
+          <div class="detalle-item"><span>Tasa</span> ${datos.tasa.toFixed(2)}</div>
+          <div class="detalle-item"><span>Comisión</span> ${datos.comision > 0 ? '-5 ' + monedaLocal : 'Ninguna'}</div>
+          <div class="detalle-item"><span>Fecha</span> ${datos.fecha}</div>
+        </div>
+        <div class="firma">Servicios de envíos de 💱 divisas en Ciego de Ávila, Morón, Habana. Cumpliremos con usted dentro las 24 horas hábiles para cada envío realizado. Una vez entregado el dinero a su familiar le confirmaremos gracias 🫂 por elegirnos</div>`;
+      document.body.appendChild(tarjeta);
+      try {
+        const canvas = await html2canvas(tarjeta, { scale: 2, backgroundColor: null });
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = `envio_${Date.now()}.png`; a.click();
+          URL.revokeObjectURL(url);
+          mostrarToast('✅ Imagen descargada');
+        }, 'image/png');
+      } catch (e) {
+        mostrarToast('❌ Error al generar imagen');
+      } finally {
+        document.body.removeChild(tarjeta);
+      }
+    }
+    btnImagen.addEventListener('click', () => {
+      if (ultimoCalculo) generarImagenPersonalizada(ultimoCalculo);
+      else mostrarToast('Primero realiza un cálculo');
+    });
+
+    btnRegistrarEnvio.addEventListener('click', () => {
+      if (!ultimoCalculo) return mostrarToast('Primero calcula');
+      registroRapido.classList.toggle('show');
+    });
+
+    btnGuardarEnvio.addEventListener('click', () => {
+      if (!ultimoCalculo) return;
+      const destinatario = destinatarioInput.value.trim() || 'Sin nombre';
+      const nota = notaInput.value.trim();
+      const nuevoEnvio = {
+        id: Date.now(),
+        ...ultimoCalculo,
+        destinatario,
+        nota
+      };
+      const envios = obtenerEnvios();
+      envios.unshift(nuevoEnvio);
+      guardarEnvios(envios);
+      registroRapido.classList.remove('show');
+      destinatarioInput.value = '';
+      notaInput.value = '';
+      mostrarToast('✅ Envío registrado correctamente');
+      if (pages.envios.classList.contains('active')) renderEnvios();
+      actualizarEstadisticas();
+    });
+
+    // Renderizar consultas
+    function renderConsultas(filtro = '') {
+      let consultas = obtenerConsultas();
+      if (filtro) {
+        consultas = consultas.filter(c =>
+          c.metodo.toLowerCase().includes(filtro.toLowerCase()) ||
+          c.moneda.toLowerCase().includes(filtro.toLowerCase())
+        );
+      }
+      if (consultas.length === 0) {
+        listaConsultas.innerHTML = '<p style="color:#7f8c8d; text-align:center;">Sin consultas registradas.</p>';
+        return;
+      }
+      listaConsultas.innerHTML = consultas.map(c => `
+        <div class="lista-item">
+          <div class="fecha"><i class="far fa-clock"></i> ${c.fecha}</div>
+          <div><strong>${c.metodo}</strong> → ${formatearMoneda(c.recibido, c.moneda)}</div>
+          <div>Envías: $${c.montoOriginal.toFixed(2)} USD | Tasa: ${c.tasa.toFixed(2)}</div>
+          <div class="acciones-item">
+            <button class="btn-icon" onclick="window.exportarConsulta('${c.id}')"><i class="fas fa-camera"></i></button>
+            <button class="btn-icon delete" onclick="window.eliminarConsulta('${c.id}')"><i class="fas fa-trash-alt"></i></button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.exportarConsulta = (id) => {
+      const consulta = obtenerConsultas().find(c => c.id == id);
+      if (consulta) generarImagenPersonalizada(consulta);
+    };
+    window.eliminarConsulta = (id) => {
+      if (confirm('¿Eliminar esta consulta?')) {
+        guardarConsultas(obtenerConsultas().filter(c => c.id != id));
+        renderConsultas(busquedaConsultas.value);
+      }
+    };
+
+    // Renderizar envíos
+    function renderEnvios(filtro = '') {
+      let envios = obtenerEnvios();
+      if (filtro) {
+        envios = envios.filter(e =>
+          e.metodo.toLowerCase().includes(filtro.toLowerCase()) ||
+          e.destinatario.toLowerCase().includes(filtro.toLowerCase()) ||
+          e.moneda.toLowerCase().includes(filtro.toLowerCase()) ||
+          (e.nota && e.nota.toLowerCase().includes(filtro.toLowerCase()))
+        );
+      }
+      if (envios.length === 0) {
+        listaEnvios.innerHTML = '<p style="color:#7f8c8d; text-align:center;">No hay envíos registrados.</p>';
+        return;
+      }
+      listaEnvios.innerHTML = envios.map(e => `
+        <div class="lista-item">
+          <div class="fecha"><i class="far fa-clock"></i> ${e.fecha}</div>
+          <div><strong>${e.destinatario}</strong> - ${e.metodo}</div>
+          <div>Envías: $${e.montoOriginal.toFixed(2)} USD → Recibes: ${formatearMoneda(e.recibido, e.moneda)}</div>
+          ${e.nota ? `<div style="color:#555; font-size:0.8rem;">📝 ${e.nota}</div>` : ''}
+          <div class="acciones-item">
+            <button class="btn-icon" onclick="window.exportarEnvio('${e.id}')"><i class="fas fa-camera"></i></button>
+            <button class="btn-icon delete" onclick="window.eliminarEnvio('${e.id}')"><i class="fas fa-trash-alt"></i></button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.exportarEnvio = (id) => {
+      const envio = obtenerEnvios().find(e => e.id == id);
+      if (envio) generarImagenPersonalizada(envio);
+    };
+    window.eliminarEnvio = (id) => {
+      if (confirm('¿Eliminar este envío?')) {
+        guardarEnvios(obtenerEnvios().filter(e => e.id != id));
+        renderEnvios(busquedaEnvios.value);
+        actualizarEstadisticas();
+      }
+    };
+
+    busquedaConsultas.addEventListener('input', (e) => renderConsultas(e.target.value));
+    busquedaEnvios.addEventListener('input', (e) => renderEnvios(e.target.value));
+
+    // Estadísticas
+    function actualizarEstadisticas() {
+      const envios = obtenerEnvios();
+      if (!envios.length) {
+        statsResumen.innerHTML = '<p style="grid-column: span 2; color:#7f8c8d;">Sin envíos registrados.</p>';
+        graficoMetodos.innerHTML = '';
+        return;
+      }
+      const totalEnviado = envios.reduce((s, e) => s + e.montoOriginal, 0);
+      const promedioEnvio = totalEnviado / envios.length;
+      const metodos = {};
+      envios.forEach(e => { metodos[e.metodo] = (metodos[e.metodo] || 0) + 1; });
+      const metodoTop = Object.entries(metodos).sort((a,b) => b[1] - a[1])[0]?.[0] || '-';
+      const monedaTop = Object.entries(envios.reduce((acc, e) => {
+        acc[e.moneda] = (acc[e.moneda] || 0) + e.recibido; return acc;
+      }, {})).sort((a,b) => b[1] - a[1])[0]?.[0] || '-';
+
+      statsResumen.innerHTML = `
+        <div class="stat-card"><h3>Total enviado</h3><div class="valor">$${totalEnviado.toFixed(0)}</div><div class="unidad">USD</div></div>
+        <div class="stat-card"><h3>Promedio/Envío</h3><div class="valor">$${promedioEnvio.toFixed(0)}</div><div class="unidad">USD</div></div>
+        <div class="stat-card"><h3>Método #1</h3><div class="valor" style="font-size:1.2rem;">${metodoTop}</div><div class="unidad">más usado</div></div>
+        <div class="stat-card"><h3>Moneda top</h3><div class="valor" style="font-size:1.2rem;">${monedaTop}</div><div class="unidad">más recibida</div></div>
+      `;
+      const totalMetodos = Object.values(metodos).reduce((a,b) => a+b, 0);
+      graficoMetodos.innerHTML = Object.entries(metodos).map(([metodo, cuenta]) => {
+        const pct = Math.round((cuenta / totalMetodos) * 100);
+        return `<div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          <span style="width:90px; font-size:0.8rem;">${metodo}</span>
+          <div style="flex:1; height:22px; background:#e9eef2; border-radius:10px; overflow:hidden;">
+            <div style="width:${pct}%; height:100%; background:linear-gradient(90deg, #0b2b5e, #1b4a7a); border-radius:10px; display:flex; align-items:center; justify-content:flex-end; padding-right:6px; color:white; font-size:0.7rem;">${pct}%</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // Contacto
+    contactBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      contactDropdown.classList.toggle('active');
+    });
+    
+    // Cerrar dropdown al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (!contactBtn.contains(e.target) && !contactDropdown.contains(e.target)) {
+        contactDropdown.classList.remove('active');
+      }
+    });
+
+    // Inicial
+    actualizarBotonActivo();
+    actualizarEtiquetaMonto();
+    renderConsultas();
+    renderizarCuentas();
+    actualizarEstadisticas();
+  })();
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registrado', reg))
+      .catch(err => console.error('Error al registrar SW', err));
+  }
+</script>
+</body>
+</html>
